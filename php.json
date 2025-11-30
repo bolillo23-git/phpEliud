@@ -1,3 +1,5 @@
 {
-  "document-root": "public"
+  "deploy": {
+    "document_root": "app_public"
+  }
 }
