@@ -1,5 +1,4 @@
 {
-  "deploy": {
-    "document_root": "app_public"
-  }
+  "php_version": "8.2",
+  "document_root": "public"
 }
