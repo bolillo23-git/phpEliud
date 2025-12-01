@@ -35,13 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'TUCORREO@gmail.com';  
+        $mail->Username = 'lazdeypaml@gmail.com';  
         $mail->Password = 'ohlandlbfqenuwuv';  // CONTRASEÑA DE APLICACIÓN (SIN ESPACIOS)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
         // Destinatario
-        $mail->setFrom('TUCORREO@gmail.com', 'Recuperación de cuenta');
+        $mail->setFrom('lazdeypaml@gmail.com', 'Recuperación de cuenta');
         $mail->addAddress($correo);
 
         // Contenido del correo
