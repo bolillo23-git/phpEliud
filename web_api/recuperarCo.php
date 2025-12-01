@@ -1,75 +1,64 @@
-<?php 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+<?php
+$email = $_REQUEST['email'];
 
-header("Content-Type: application/json");
+$servername = "bstvndf39q5wtuj2jq3c-mysql.services.clever-cloud.com";
+$username   = "unrl4oy6t7svgk6i";
+$password   = "E8cg8K1l4HKAMW7E1ndd";
+$dbname     = "bstvndf39q5wtuj2jq3c";
 
-// Importar clases de PHPMailer
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+try {
 
-// Cargar PHPMailer desde tu carpeta
-require __DIR__ . '/phpmailer/Exception.php';
-require __DIR__ . '/phpmailer/PHPMailer.php';
-require __DIR__ . '/phpmailer/SMTP.php';
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Llamar a SP corregido
+    $stmt = $conn->prepare("CALL sp_recuperar_contrasena(:email)");
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
 
-    // El parámetro correcto es "email"
-    $correo = $_POST['email'] ?? '';
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (empty($correo)) {
-        echo json_encode(["status" => "error", "message" => "Correo vacío"]);
-        exit;
+    if ($result) {
+
+        $nombre     = $result['nombreUsuario'];
+        $contrasena = $result['passwordLogin'];
+
+        // Datos del correo
+        $to      = $email;
+        $subject = "Recuperación de contraseña - Sistema de Login";
+
+        $txt = "
+Hola $nombre,
+
+Tu contraseña registrada en el sistema es:
+
+    $contrasena
+
+Por favor, no compartas esta información con nadie.
+
+Atentamente,
+Soporte del Sistema
+";
+
+        $headers = "From: soporte@tuservidor.com\r\n" .
+                   "Reply-To: soporte@tuservidor.com\r\n" .
+                   "X-Mailer: PHP/" . phpversion();
+
+        // Enviar correo
+        if (mail($to, $subject, $txt, $headers)) {
+            echo json_encode(["mensaje" => "Se envió la contraseña al correo."]);
+        } else {
+            echo json_encode(["mensaje" => "Error al enviar el correo."]);
+        }
+
+    } else {
+        echo json_encode(["mensaje" => "Correo no registrado."]);
     }
 
-    // Código temporal para recuperar password
-    $codigo = rand(100000, 999999);
-
-    $mail = new PHPMailer(true);
-
-    try {
-
-        // Configuración SMTP
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'lazdeypaml@gmail.com';  
-        $mail->Password = 'ohlandlbfqenuwuv';  // CONTRASEÑA DE APLICACIÓN (SIN ESPACIOS)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-
-        // Destinatario
-        $mail->setFrom('lazdeypaml@gmail.com', 'Recuperación de cuenta');
-        $mail->addAddress($correo);
-
-        // Contenido del correo
-        $mail->isHTML(true);
-        $mail->Subject = 'Código de recuperación';
-        $mail->Body = "<h2>Tu código de recuperación es:</h2>
-                       <h1><b>$codigo</b></h1>";
-
-        // Enviar
-        $mail->send();
-
-        echo json_encode([
-            "status" => "ok",
-            "message" => "Código enviado correctamente",
-            "codigo" => $codigo
-        ]);
-
-    } catch (Exception $e) {
-
-        echo json_encode([
-            "status" => "error",
-            "message" => "Error enviando correo",
-            "debug" => $mail->ErrorInfo
-        ]);
-    }
-
-} else {
-
-    echo json_encode(["status" => "error", "message" => "Método no permitido"]);
+} catch(PDOException $e) {
+    echo json_encode(["mensaje" => "Error: " . $e->getMessage()]);
 }
+
+$conn = null;
 ?>
+
