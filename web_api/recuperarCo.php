@@ -1,60 +1,75 @@
-<?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'PHPMailer/Exception.php';
-require 'PHPMailer/PHPMailer.php';
-require 'PHPMailer/SMTP.php';
+<?php 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+// Importar clases de PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-    $correo = $_POST['correo'] ?? '';
+// Cargar PHPMailer desde tu carpeta
+require __DIR__ . '/phpmailer/Exception.php';
+require __DIR__ . '/phpmailer/PHPMailer.php';
+require __DIR__ . '/phpmailer/SMTP.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // El parámetro correcto es "email"
+    $correo = $_POST['email'] ?? '';
 
     if (empty($correo)) {
         echo json_encode(["status" => "error", "message" => "Correo vacío"]);
         exit;
     }
 
-    // Código temporal de recuperación
+    // Código temporal para recuperar password
     $codigo = rand(100000, 999999);
 
     $mail = new PHPMailer(true);
 
     try {
 
+        // Configuración SMTP
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'TU_CORREO@gmail.com';
-        $mail->Password = 'ohlandlbfqenuwuv'; // ← CAMBIA ESTO
+        $mail->Username = 'TUCORREO@gmail.com';  
+        $mail->Password = 'ohlandlbfqenuwuv';  // CONTRASEÑA DE APLICACIÓN (SIN ESPACIOS)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom('TU_CORREO@gmail.com', 'Recuperación');
+        // Destinatario
+        $mail->setFrom('TUCORREO@gmail.com', 'Recuperación de cuenta');
         $mail->addAddress($correo);
 
+        // Contenido del correo
         $mail->isHTML(true);
         $mail->Subject = 'Código de recuperación';
-        $mail->Body = "<h3>Tu código de recuperación es: <b>$codigo</b></h3>";
+        $mail->Body = "<h2>Tu código de recuperación es:</h2>
+                       <h1><b>$codigo</b></h1>";
 
+        // Enviar
         $mail->send();
 
         echo json_encode([
             "status" => "ok",
-            "message" => "Código enviado",
+            "message" => "Código enviado correctamente",
             "codigo" => $codigo
         ]);
+
     } catch (Exception $e) {
+
         echo json_encode([
             "status" => "error",
-            "message" => "mail ERROR",
+            "message" => "Error enviando correo",
             "debug" => $mail->ErrorInfo
         ]);
     }
 
 } else {
+
     echo json_encode(["status" => "error", "message" => "Método no permitido"]);
 }
 ?>
