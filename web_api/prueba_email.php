@@ -12,8 +12,8 @@ if (file_exists($dotenv)) {
 $apiKey = getenv('SENDINBLUE_API_KEY');
 
 // Correo de prueba
-$toEmail = "tucorreo@ejemplo.com"; // tu email para prueba
-$toName  = "Tu Nombre";
+$toEmail = "lazdeypaml@gmail.com"; // tu email para prueba
+$toName  = "Eduardo";
 
 $data = [
     'sender' => ['name' => 'Prueba', 'email' => 'soporte@tuservidor.com'],
